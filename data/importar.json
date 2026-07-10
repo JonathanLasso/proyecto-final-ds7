@@ -1,0 +1,16 @@
+[
+  {
+    "titulo": "Batman: The Animated Series",
+    "tipo": "Action",
+    "descripcion": "The Dark Knight fights crime in Gotham City.",
+    "poster_url": "https://static.tvmaze.com/uploads/images/medium_portrait/6/15097.jpg",
+    "api_id": "481"
+  },
+  {
+    "titulo": "Superman",
+    "tipo": "Scripted",
+    "descripcion": "The Man of Steel protects Metropolis.",
+    "poster_url": "https://static.tvmaze.com/uploads/images/medium_portrait/10/26131.jpg",
+    "api_id": "525"
+  }
+]

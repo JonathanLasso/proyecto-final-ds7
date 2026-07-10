@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /streammatch/public/
+    
+    # Si el archivo o directorio existe (ej. assets), lo sirve directamente
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    
+    # De lo contrario, redirige todo al index.php pasándolo como parámetro url
+    RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>

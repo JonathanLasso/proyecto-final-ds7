@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /streammatch/
+    
+    # Bloquear el acceso a carpetas sensibles
+    RewriteRule ^app/.*$ - [F,L]
+    RewriteRule ^data/.*$ - [F,L]
+    
+    # Redirigir el trafico a la carpeta public
+    RewriteCond %{REQUEST_URI} !^/streammatch/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

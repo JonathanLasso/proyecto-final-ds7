@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalogo>
+    <contenido>
+        <id>1</id>
+        <titulo>Breaking Bad</titulo>
+        <tipo>Scripted</tipo>
+        <descripcion>A high school chemistry teacher turns to manufacturing methamphetamine.</descripcion>
+        <poster_url>https://static.tvmaze.com/uploads/images/medium_portrait/0/2400.jpg</poster_url>
+        <api_id>169</api_id>
+    </contenido>
+</catalogo>
