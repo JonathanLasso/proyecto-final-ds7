@@ -3,9 +3,17 @@
     <contenido>
         <id>1</id>
         <titulo>Breaking Bad</titulo>
-        <tipo>Scripted</tipo>
-        <descripcion>A high school chemistry teacher turns to manufacturing methamphetamine.</descripcion>
+        <tipo>Serie</tipo>
+        <descripcion>Un profesor de química de secundaria empieza a fabricar metanfetamina tras ser diagnosticado con cáncer.</descripcion>
         <poster_url>https://static.tvmaze.com/uploads/images/medium_portrait/0/2400.jpg</poster_url>
         <api_id>169</api_id>
+    </contenido>
+    <contenido>
+        <id>2</id>
+        <titulo>Severance</titulo>
+        <tipo>Pelicula</tipo>
+        <descripcion>Un equipo de empleados de oficina cuyos recuerdos han sido divididos quirúrgicamente entre su vida laboral y personal.</descripcion>
+        <poster_url>https://static.tvmaze.com/uploads/images/medium_portrait/602/1507323.jpg</poster_url>
+        <api_id>53723</api_id>
     </contenido>
 </catalogo>

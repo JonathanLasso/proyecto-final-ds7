@@ -15,9 +15,11 @@ class Router {
             'content/guardar' => ['controller' => 'ContentController', 'method' => 'guardar'],
 
             'admin' => ['controller' => 'AdminController', 'method' => 'dashboard'],
-            'admin/export_json' => ['controller' => 'AdminController', 'method' => 'exportJson'],
-            'admin/export_xml' => ['controller' => 'AdminController', 'method' => 'exportXml'],
-            'admin/import' => ['controller' => 'AdminController', 'method' => 'importData']
+            'admin/login' => ['controller' => 'AdminController', 'method' => 'login'],
+            'admin/register' => ['controller' => 'AdminController', 'method' => 'register'],
+            'admin/export_json' => ['controller' => 'AdminController', 'method' => 'export_json'],
+            'admin/export_xml' => ['controller' => 'AdminController', 'method' => 'export_xml'],
+            'admin/import' => ['controller' => 'AdminController', 'method' => 'import']
         ];
 
         // Limpiar la URL de barras finales

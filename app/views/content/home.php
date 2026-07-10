@@ -50,7 +50,7 @@
                                         <input type="hidden" name="poster_url" value="<?= htmlspecialchars("https://image.tmdb.org/t/p/w500" . ($item['poster_path'] ?? '')) ?>">
 
                                         <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">
-                                            <i class="bi bi-download"></i> Importar a Local
+                                            <i class="bi bi-download"></i> Guardar en el catalogo local
                                         </button>
                                     </form>
                                 </div>
