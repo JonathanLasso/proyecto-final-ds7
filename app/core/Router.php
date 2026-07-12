@@ -19,7 +19,12 @@ class Router {
             'admin/register' => ['controller' => 'AdminController', 'method' => 'register'],
             'admin/export_json' => ['controller' => 'AdminController', 'method' => 'export_json'],
             'admin/export_xml' => ['controller' => 'AdminController', 'method' => 'export_xml'],
-            'admin/import' => ['controller' => 'AdminController', 'method' => 'import']
+            'admin/import' => ['controller' => 'AdminController', 'method' => 'import'],
+
+            // crud
+            'admin/create' => ['controller' => 'AdminController', 'method' => 'create'],
+            'admin/update' => ['controller' => 'AdminController', 'method' => 'update'],
+            'admin/delete' => ['controller' => 'AdminController', 'method' => 'delete']
         ];
 
         // Limpiar la URL de barras finales

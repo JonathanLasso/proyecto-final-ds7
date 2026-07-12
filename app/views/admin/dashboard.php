@@ -73,7 +73,7 @@
                                                     data-id="<?= $item['id'] ?>"
                                                     data-titulo="<?= htmlspecialchars($item['titulo']) ?>"
                                                     data-tipo="<?= htmlspecialchars($item['tipo']) ?>"
-                                                    data-descripcion="<?= htmlspecialchars($item['descripcion'] ?? '') ?>"
+                                                    data-descripcion="<?= htmlspecialchars((string)($item['descripcion'] ?? '')) ?>"
                                                     data-poster="<?= htmlspecialchars($item['poster_url'] ?? '') ?>"
                                                     data-api="<?= htmlspecialchars($item['api_id'] ?? '') ?>">
                                                 <i class="bi bi-pencil-square"></i>

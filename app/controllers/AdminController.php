@@ -2,19 +2,22 @@
 require_once BASE_PATH . "/app/models/Content.php";
 require_once BASE_PATH . "/app/models/User.php";
 
-class AdminController {
+class AdminController
+{
     private $db;
     private $content;
     private $user;
 
-    public function __construct() {
+    public function __construct()
+    {
         $database = new Database();
         $this->db = $database->getConnection();
         $this->content = new Content($this->db);
         $this->user = new User($this->db);
     }
 
-    public function login() {
+    public function login()
+    {
         if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'administrador') {
             header("Location: /streammatch/public/admin");
             exit();
@@ -38,7 +41,7 @@ class AdminController {
                         $_SESSION['nombre_usuario'] = $this->user->nombre;
                         $_SESSION['rol'] = $this->user->rol;
 
-                        if($this->user->tema) {
+                        if ($this->user->tema) {
                             setcookie("theme", $this->user->tema, time() + (86400 * 30), "/");
                         }
 
@@ -63,7 +66,8 @@ class AdminController {
         require_once BASE_PATH . "/app/views/admin/login.php";
     }
 
-    public function register() {
+    public function register()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->user->nombre = $_POST['nombre'] ?? '';
             $this->user->email = $_POST['email'] ?? '';
@@ -74,6 +78,22 @@ class AdminController {
                 $_SESSION['flash_message'] = [
                     'type' => 'warning',
                     'text' => 'El correo ya está registrado.'
+                ];
+                header("Location: /streammatch/public/admin/register");
+                exit();
+            }
+            /*
+               Explicación de la expresión regular:
+               - (?=.*[A-Za-z]): Al menos una letra (mayúscula o minúscula).
+               - (?=.*\d): Al menos un número.
+               - (?=.*[\W_]): Al menos un carácter especial (no alfanumérico, incluye guiones bajos).
+               - .{15,}: Mínimo 15 caracteres de longitud.
+            */
+            $patternPassword = '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{15,}$/';
+            if (!preg_match($patternPassword, $this->user->password)) {
+                $_SESSION['flash_message'] = [
+                    'type' => 'danger',
+                    'text' => 'La contraseña debe tener al menos 15 caracteres e incluir letras, números y caracteres especiales (ej. @, #, $, _).'
                 ];
             } else {
                 if ($this->user->create()) {
@@ -95,7 +115,8 @@ class AdminController {
         require_once BASE_PATH . "/app/views/admin/register.php";
     }
 
-    public function dashboard() {
+    public function dashboard()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login"); // Asegúrate de que esta sea tu ruta de login
             exit();
@@ -105,12 +126,12 @@ class AdminController {
     }
 
     // Cambiado de exportJson a export_json para hacer match con tu vista
-    public function export_json() {
+    public function export_json()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login");
             exit();
-        }
-        else {
+        } else {
             $data = $this->content->getAll();
             $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
@@ -123,12 +144,12 @@ class AdminController {
     }
 
     // Cambiado de exportXml a export_xml para hacer match con tu vista
-    public function export_xml() {
+    public function export_xml()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login");
             exit();
-        }
-        else {
+        } else {
             $data = $this->content->getAll();
 
             $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><catalogo></catalogo>');
@@ -153,12 +174,12 @@ class AdminController {
     }
 
     // Cambiado de importData a import para que coincida con action="/admin/import"
-    public function import() {
+    public function import()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login");
             exit();
-        }
-        else {
+        } else {
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
                 $fileTmpPath = $_FILES['import_file']['tmp_name'];
                 $fileName = $_FILES['import_file']['name'];
@@ -200,101 +221,109 @@ class AdminController {
     }
 
     // 1. AGREGAR CONTENIDO MANUALMENTE
-    public function create() {
+    public function create()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login");
             exit();
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Recoger y limpiar datos del formulario
-            $titulo = $_POST['titulo'] ?? '';
-            $tipo = $_POST['tipo'] ?? 'pelicula'; // O 'serie' según tu app
-            $descripcion = $_POST['descripcion'] ?? '';
-            $poster_url = $_POST['poster_url'] ?? '';
-            $api_id = $_POST['api_id'] ?? null; // Puede ser nulo si es 100% manual
+            // Limpieza básica de datos recibidos del modal
+            $titulo = trim(filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_SPECIAL_CHARS));
+            $tipo = ($_POST['tipo'] === 'serie') ? 'serie' : 'pelicula';
+            $descripcion = trim(filter_input(INPUT_POST, 'descripcion', FILTER_SANITIZE_SPECIAL_CHARS));
+            $poster_url = filter_input(INPUT_POST, 'poster_url', FILTER_VALIDATE_URL) ? $_POST['poster_url'] : '';
+            $api_id = !empty($_POST['api_id']) ? trim($_POST['api_id']) : null;
 
-            // Reutilizamos tu método existente del modelo Content
-            if ($this->content->saveFromApi($titulo, $tipo, $descripcion, $poster_url, $api_id)) {
-                $_SESSION['flash_message'] = [
-                    'type' => 'success',
-                    'text' => 'Contenido agregado exitosamente de forma manual.'
-                ];
-                header("Location: /streammatch/public/admin");
-                exit();
+            if (!empty($titulo)) {
+                if ($this->content->saveFromApi($titulo, $tipo, $descripcion, $poster_url, $api_id)) {
+                    $_SESSION['flash_message'] = [
+                        'type' => 'success',
+                        'text' => 'Contenido agregado exitosamente desde el panel.'
+                    ];
+                } else {
+                    $_SESSION['flash_message'] = [
+                        'type' => 'danger',
+                        'text' => 'Error al guardar el contenido o el ID externo ya existe.'
+                    ];
+                }
             } else {
                 $_SESSION['flash_message'] = [
-                    'type' => 'danger',
-                    'text' => 'Error al guardar el contenido.'
+                    'type' => 'warning',
+                    'text' => 'El título es un campo obligatorio.'
                 ];
             }
         }
 
-        // Carga la vista del formulario para agregar
-        require_once BASE_PATH . "/app/views/admin/create.php";
+        // Siempre redirige de vuelta al dashboard, jamás carga una vista individual
+        header("Location: /streammatch/public/admin");
+        exit();
     }
 
     // 2. ACTUALIZAR / EDITAR CONTENIDO
-    public function update() {
+    public function update()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login");
             exit();
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Procesar la actualización
-            $id = $_POST['id'] ?? null;
-            $titulo = $_POST['titulo'] ?? '';
-            $tipo = $_POST['tipo'] ?? '';
-            $descripcion = $_POST['descripcion'] ?? '';
+            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+            $titulo = trim(filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_SPECIAL_CHARS));
+            $tipo = ($_POST['tipo'] === 'serie') ? 'serie' : 'pelicula';
+            $descripcion = trim(filter_input(INPUT_POST, 'descripcion', FILTER_SANITIZE_SPECIAL_CHARS));
             $poster_url = $_POST['poster_url'] ?? '';
-            $api_id = $_POST['api_id'] ?? null;
+            $api_id = !empty($_POST['api_id']) ? trim($_POST['api_id']) : null;
 
-            if ($id) {
-                // NOTA: Asegúrate de que tu modelo Content tenga un método update() similar a este
+            if ($id && !empty($titulo)) {
                 if ($this->content->update($id, $titulo, $tipo, $descripcion, $poster_url, $api_id)) {
-                    $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Contenido actualizado correctamente.'];
+                    $_SESSION['flash_message'] = [
+                        'type' => 'success',
+                        'text' => 'Contenido actualizado correctamente.'
+                    ];
                 } else {
-                    $_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Error al actualizar el contenido.'];
+                    $_SESSION['flash_message'] = [
+                        'type' => 'danger',
+                        'text' => 'Error al actualizar el contenido en la base de datos.'
+                    ];
                 }
+            } else {
+                $_SESSION['flash_message'] = [
+                    'type' => 'danger',
+                    'text' => 'Datos inválidos. No se pudo procesar la actualización.'
+                ];
             }
-            header("Location: /streammatch/public/admin");
-            exit();
-        } else {
-            // Método GET: Cargar los datos actuales para mostrarlos en el formulario de edición
-            $id = $_GET['id'] ?? null;
-            if ($id) {
-                // NOTA: Asegúrate de que tu modelo Content tenga un método para buscar por ID (ej: getById)
-                $item = $this->content->getById($id);
-                if ($item) {
-                    require_once BASE_PATH . "/app/views/admin/edit.php";
-                    exit();
-                }
-            }
-
-            $_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Contenido no encontrado.'];
-            header("Location: /streammatch/public/admin");
-            exit();
         }
+
+        // Redirección inmediata al entorno unificado
+        header("Location: /streammatch/public/admin");
+        exit();
     }
 
     // 3. ELIMINAR CONTENIDO
-    public function delete() {
+    public function delete()
+    {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
             header("Location: /streammatch/public/admin/login");
             exit();
         }
 
-        // Es más seguro recibir eliminaciones por POST para evitar ejecuciones accidentales por URL
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = $_POST['id'] ?? null;
+            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 
             if ($id) {
-                // NOTA: Asegúrate de que tu modelo Content tenga un método delete()
                 if ($this->content->delete($id)) {
-                    $_SESSION['flash_message'] = ['type' => 'success', 'text' => 'Contenido eliminado correctamente.'];
+                    $_SESSION['flash_message'] = [
+                        'type' => 'success',
+                        'text' => 'Contenido eliminado permanentemente.'
+                    ];
                 } else {
-                    $_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Error al eliminar el contenido.'];
+                    $_SESSION['flash_message'] = [
+                        'type' => 'danger',
+                        'text' => 'Error del sistema al intentar eliminar el registro.'
+                    ];
                 }
             }
         }

@@ -76,6 +76,22 @@ class AuthController {
                     'type' => 'warning',
                     'text' => 'El correo ya está registrado.'
                 ];
+                header("Location: /streammatch/public/register");
+                exit();
+            }
+            /*
+               Explicación de la expresión regular:
+               - (?=.*[A-Za-z]): Al menos una letra (mayúscula o minúscula).
+               - (?=.*\d): Al menos un número.
+               - (?=.*[\W_]): Al menos un carácter especial (no alfanumérico, incluye guiones bajos).
+               - .{15,}: Mínimo 15 caracteres de longitud.
+            */
+            $patternPassword = '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{15,}$/';
+            if (!preg_match($patternPassword, $this->user->password)) {
+                $_SESSION['flash_message'] = [
+                    'type' => 'danger',
+                    'text' => 'La contraseña debe tener al menos 15 caracteres e incluir letras, números y caracteres especiales (ej. @, #, $, _).'
+                ];
             } else {
                 if ($this->user->create()) {
                     $_SESSION['flash_message'] = [
