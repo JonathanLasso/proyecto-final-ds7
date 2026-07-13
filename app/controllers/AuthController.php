@@ -18,8 +18,8 @@ class AuthController {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->user->email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
+            $this->user->email = trim($_POST['email'] ?? '');
+            $password = trim($_POST['password'] ?? '');
 
             if ($this->user->emailExists()) {
                 // Protección contra fuerza bruta
@@ -34,11 +34,11 @@ class AuthController {
                         $_SESSION['usuario_id'] = $this->user->id;
                         $_SESSION['nombre_usuario'] = $this->user->nombre;
                         $_SESSION['rol'] = $this->user->rol;
-                        
+
                         if($this->user->tema) {
                             setcookie("theme", $this->user->tema, time() + (86400 * 30), "/");
                         }
-                        
+
                         header("Location: /streammatch/public/");
                         exit();
                     } else {
@@ -56,7 +56,7 @@ class AuthController {
                 ];
             }
         }
-        
+
         require_once BASE_PATH . "/app/views/auth/login.php";
     }
 
@@ -67,9 +67,9 @@ class AuthController {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->user->nombre = $_POST['nombre'] ?? '';
-            $this->user->email = $_POST['email'] ?? '';
-            $this->user->password = $_POST['password'] ?? '';
+            $this->user->nombre = trim($_POST['nombre'] ?? '');
+            $this->user->email = filter_input(INPUT_POST, 'email',FILTER_VALIDATE_EMAIL) ? trim($_POST['email']) : '';
+            $this->user->password = trim($_POST['password'] ?? '');
 
             if ($this->user->emailExists()) {
                 $_SESSION['flash_message'] = [

@@ -1,6 +1,7 @@
 <?php
 require_once BASE_PATH . "/app/models/Content.php";
 require_once BASE_PATH . "/app/models/User.php";
+require_once BASE_PATH . "/app/models/Preference.php";
 
 class AdminController
 {
@@ -24,7 +25,7 @@ class AdminController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->user->email = $_POST['email'] ?? '';
+            $this->user->email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
 
             if ($this->user->emailExists()) {
@@ -69,8 +70,17 @@ class AdminController
     public function register()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->user->nombre = $_POST['nombre'] ?? '';
-            $this->user->email = $_POST['email'] ?? '';
+            // CORRECCIÓN XSS: Datos puros
+            $this->user->nombre = trim($_POST['nombre'] ?? '');
+
+            $emailInput = trim($_POST['email'] ?? '');
+            if (!filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
+                $_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Formato de correo inválido.'];
+                require_once BASE_PATH . "/app/views/admin/register.php";
+                return;
+            }
+
+            $this->user->email = $emailInput;
             $this->user->password = $_POST['password'] ?? '';
             $this->user->rol = "administrador";
 
@@ -82,18 +92,12 @@ class AdminController
                 header("Location: /streammatch/public/admin/register");
                 exit();
             }
-            /*
-               Explicación de la expresión regular:
-               - (?=.*[A-Za-z]): Al menos una letra (mayúscula o minúscula).
-               - (?=.*\d): Al menos un número.
-               - (?=.*[\W_]): Al menos un carácter especial (no alfanumérico, incluye guiones bajos).
-               - .{15,}: Mínimo 15 caracteres de longitud.
-            */
+
             $patternPassword = '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[\W_]).{15,}$/';
             if (!preg_match($patternPassword, $this->user->password)) {
                 $_SESSION['flash_message'] = [
                     'type' => 'danger',
-                    'text' => 'La contraseña debe tener al menos 15 caracteres e incluir letras, números y caracteres especiales (ej. @, #, $, _).'
+                    'text' => 'La contraseña debe tener al menos 15 caracteres e incluir letras, números y caracteres especiales.'
                 ];
             } else {
                 if ($this->user->create()) {
@@ -118,14 +122,16 @@ class AdminController
     public function dashboard()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
-            header("Location: /streammatch/public/admin/login"); // Asegúrate de que esta sea tu ruta de login
+            header("Location: /streammatch/public/admin/login");
             exit();
         }
         $localContent = $this->content->getAll();
+        $preferenceModel = new Preference($this->db);
+        $allGenres = $preferenceModel->getAllGenres();
+
         require_once BASE_PATH . "/app/views/admin/dashboard.php";
     }
 
-    // Cambiado de exportJson a export_json para hacer match con tu vista
     public function export_json()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
@@ -135,7 +141,6 @@ class AdminController
             $data = $this->content->getAll();
             $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-            // Descarga directa sin escribir archivos físicos en el servidor
             header('Content-disposition: attachment; filename=export.json');
             header('Content-type: application/json; charset=utf-8');
             echo $json;
@@ -143,7 +148,6 @@ class AdminController
         }
     }
 
-    // Cambiado de exportXml a export_xml para hacer match con tu vista
     public function export_xml()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
@@ -151,21 +155,19 @@ class AdminController
             exit();
         } else {
             $data = $this->content->getAll();
-
             $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><catalogo></catalogo>');
 
             foreach ($data as $item) {
                 $node = $xml->addChild('contenido');
                 $node->addChild('id', $item['id']);
-                $node->addChild('titulo', htmlspecialchars($item['titulo']));
+                // XML requiere escapar de manera nativa los caracteres especiales al estructurar el árbol
+                $node->addChild('titulo', htmlspecialchars($item['titulo'], ENT_XML1, 'UTF-8'));
                 $node->addChild('tipo', $item['tipo']);
-                // Agregamos descripción que falto en tu XML original pero la usas en la importación
-                $node->addChild('descripcion', htmlspecialchars($item['descripcion'] ?? ''));
-                $node->addChild('poster_url', htmlspecialchars($item['poster_url']));
-                $node->addChild('api_id', htmlspecialchars($item['api_id']));
+                $node->addChild('descripcion', htmlspecialchars($item['descripcion'] ?? '', ENT_XML1, 'UTF-8'));
+                $node->addChild('poster_url', htmlspecialchars($item['poster_url'], ENT_XML1, 'UTF-8'));
+                $node->addChild('api_id', htmlspecialchars($item['api_id'], ENT_XML1, 'UTF-8'));
             }
 
-            // Descarga directa del XML por flujo de salida
             header('Content-disposition: attachment; filename=feed.xml');
             header('Content-type: text/xml; charset=utf-8');
             echo $xml->asXML();
@@ -173,7 +175,6 @@ class AdminController
         }
     }
 
-    // Cambiado de importData a import para que coincida con action="/admin/import"
     public function import()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
@@ -181,36 +182,90 @@ class AdminController
             exit();
         } else {
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['import_file'])) {
+                $allowedMimeTypes = ['application/json', 'text/xml', 'application/xml'];
+                $fileMimeType = mime_content_type($_FILES['import_file']['tmp_name']);
+
+                if (!in_array($fileMimeType, $allowedMimeTypes)) {
+                    $_SESSION['flash_message'] = ['type' => 'danger', 'text' => 'Tipo de archivo no permitido.'];
+                    header("Location: /streammatch/public/admin");
+                    exit();
+                }
+
                 $fileTmpPath = $_FILES['import_file']['tmp_name'];
                 $fileName = $_FILES['import_file']['name'];
                 $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
+                require_once BASE_PATH . "/app/models/Preference.php";
+                $prefModel = new Preference($this->db);
+                $allGenres = $prefModel->getAllGenres();
+
+                $localGenreMap = [];
+                foreach ($allGenres as $g) {
+                    $localGenreMap[strtolower(trim($g['nombre']))] = $g['id'];
+                }
+
+                $count = 0;
+
                 if ($fileExtension === 'json') {
                     $jsonString = file_get_contents($fileTmpPath);
                     $data = json_decode($jsonString, true);
-                    $count = 0;
+
                     if (is_array($data)) {
                         foreach ($data as $item) {
-                            if ($this->content->saveFromApi($item['titulo'], $item['tipo'], $item['descripcion'] ?? '', $item['poster_url'] ?? '', $item['api_id'] ?? '')) {
+                            $titulo = trim($item['titulo'] ?? '');
+                            $tipo = ($item['tipo'] === 'serie') ? 'serie' : 'pelicula';
+                            $descripcion = trim($item['descripcion'] ?? '');
+                            $poster_url = trim($item['poster_url'] ?? '');
+                            $api_id = trim($item['api_id'] ?? '');
+
+                            $genderIds = [];
+                            if (!empty($item['generos']) && is_array($item['generos'])) {
+                                foreach ($item['generos'] as $genreName) {
+                                    $normalized = strtolower(trim($genreName));
+                                    if (isset($localGenreMap[$normalized])) {
+                                        $genderIds[] = $localGenreMap[$normalized];
+                                    }
+                                }
+                            }
+
+                            if (!empty($titulo) && $this->content->saveFromApiWithGenres($titulo, $tipo, $descripcion, $poster_url, $api_id, $genderIds)) {
                                 $count++;
                             }
                         }
                     }
-                    $_SESSION['flash_message'] = ['type' => 'success', 'text' => "Importados $count registros desde JSON."];
+                    $_SESSION['flash_message'] = ['type' => 'success', 'text' => "Importados $count registros desde JSON con sus géneros."];
+
                 } elseif ($fileExtension === 'xml') {
                     $xmlString = file_get_contents($fileTmpPath);
+
+                    libxml_use_internal_errors(true);
                     $xml = simplexml_load_string($xmlString);
-                    $count = 0;
+
                     if ($xml !== false) {
                         foreach ($xml->contenido as $item) {
-                            // Usamos la validación ternaria por si el nodo descripción viene vacío en el XML externo
-                            $descripcion = isset($item->descripcion) ? (string)$item->descripcion : '';
-                            if ($this->content->saveFromApi((string)$item->titulo, (string)$item->tipo, $descripcion, (string)$item->poster_url, (string)$item->api_id)) {
+                            // CORRECCIÓN XSS: Guardamos los strings limpios y originales sin htmlspecialchars
+                            $titulo = trim((string)$item->titulo);
+                            $tipo = ((string)$item->tipo === 'serie') ? 'serie' : 'pelicula';
+                            $descripcion = isset($item->descripcion) ? trim((string)$item->descripcion) : '';
+                            $poster_url = trim((string)$item->poster_url);
+                            $api_id = trim((string)$item->api_id);
+
+                            $genderIds = [];
+                            if (isset($item->generos->genero)) {
+                                foreach ($item->generos->genero as $gName) {
+                                    $normalized = strtolower(trim((string)$gName));
+                                    if (isset($localGenreMap[$normalized])) {
+                                        $genderIds[] = $localGenreMap[$normalized];
+                                    }
+                                }
+                            }
+
+                            if (!empty($titulo) && $this->content->saveFromApiWithGenres($titulo, $tipo, $descripcion, $poster_url, $api_id, $genderIds)) {
                                 $count++;
                             }
                         }
                     }
-                    $_SESSION['flash_message'] = ['type' => 'success', 'text' => "Importados $count registros desde XML."];
+                    $_SESSION['flash_message'] = ['type' => 'success', 'text' => "Importados $count registros desde XML con sus géneros."];
                 } else {
                     $_SESSION['flash_message'] = ['type' => 'danger', 'text' => "Formato no soportado. Sólo JSON o XML."];
                 }
@@ -220,7 +275,6 @@ class AdminController
         }
     }
 
-    // 1. AGREGAR CONTENIDO MANUALMENTE
     public function create()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
@@ -229,18 +283,19 @@ class AdminController
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Limpieza básica de datos recibidos del modal
-            $titulo = trim(filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_SPECIAL_CHARS));
+            // CORRECCIÓN XSS: Quitar htmlspecialchars del guardado manual
+            $titulo = trim($_POST['titulo'] ?? '');
             $tipo = ($_POST['tipo'] === 'serie') ? 'serie' : 'pelicula';
-            $descripcion = trim(filter_input(INPUT_POST, 'descripcion', FILTER_SANITIZE_SPECIAL_CHARS));
+            $descripcion = trim($_POST['descripcion'] ?? '');
             $poster_url = filter_input(INPUT_POST, 'poster_url', FILTER_VALIDATE_URL) ? $_POST['poster_url'] : '';
             $api_id = !empty($_POST['api_id']) ? trim($_POST['api_id']) : null;
+            $genderIds = $_POST['generos'] ?? [];
 
             if (!empty($titulo)) {
-                if ($this->content->saveFromApi($titulo, $tipo, $descripcion, $poster_url, $api_id)) {
+                if ($this->content->saveFromApiWithGenres($titulo, $tipo, $descripcion, $poster_url, $api_id, $genderIds)) {
                     $_SESSION['flash_message'] = [
                         'type' => 'success',
-                        'text' => 'Contenido agregado exitosamente desde el panel.'
+                        'text' => 'Contenido agregado exitosamente con sus géneros desde el panel.'
                     ];
                 } else {
                     $_SESSION['flash_message'] = [
@@ -256,12 +311,10 @@ class AdminController
             }
         }
 
-        // Siempre redirige de vuelta al dashboard, jamás carga una vista individual
         header("Location: /streammatch/public/admin");
         exit();
     }
 
-    // 2. ACTUALIZAR / EDITAR CONTENIDO
     public function update()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
@@ -271,10 +324,11 @@ class AdminController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-            $titulo = trim(filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_SPECIAL_CHARS));
+            // CORRECCIÓN XSS: Quitar htmlspecialchars de la edición
+            $titulo = trim($_POST['titulo'] ?? '');
             $tipo = ($_POST['tipo'] === 'serie') ? 'serie' : 'pelicula';
-            $descripcion = trim(filter_input(INPUT_POST, 'descripcion', FILTER_SANITIZE_SPECIAL_CHARS));
-            $poster_url = $_POST['poster_url'] ?? '';
+            $descripcion = trim($_POST['descripcion'] ?? '');
+            $poster_url = filter_input(INPUT_POST, 'poster_url', FILTER_VALIDATE_URL) ? $_POST['poster_url'] : '';
             $api_id = !empty($_POST['api_id']) ? trim($_POST['api_id']) : null;
 
             if ($id && !empty($titulo)) {
@@ -297,12 +351,10 @@ class AdminController
             }
         }
 
-        // Redirección inmediata al entorno unificado
         header("Location: /streammatch/public/admin");
         exit();
     }
 
-    // 3. ELIMINAR CONTENIDO
     public function delete()
     {
         if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
@@ -328,6 +380,30 @@ class AdminController
             }
         }
 
+        header("Location: /streammatch/public/admin");
+        exit();
+    }
+
+    public function deleteAll()
+    {
+        if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'administrador') {
+            header("Location: /streammatch/public/admin/login");
+            exit();
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if($this->content->deleteAll()) {
+                $_SESSION['flash_message'] = [
+                    'type' => 'success',
+                    'text' => 'Todo el contenido fue eliminado.'
+                ];
+            }
+            else{
+                $_SESSION['flash_message'] = [
+                    'type' => 'danger',
+                    'text' => 'No hay ningun contenido.'
+                ];
+            }
+        }
         header("Location: /streammatch/public/admin");
         exit();
     }

@@ -8,12 +8,12 @@
             </div>
             <div class="card-body p-4">
                 <p class="text-muted mb-4">Selecciona los géneros que más te gustan para afinar tus recomendaciones.</p>
-                <form action="/streammatch/public/preferencias" method="POST">
+                <form action="/streammatch/public/preferences" method="POST">
                     <div class="row g-3">
                         <?php foreach($allGenres as $genre): ?>
                             <div class="col-md-4 col-sm-6">
                                 <div class="form-check form-switch p-3 border rounded shadow-sm hover-shadow transition h-100 d-flex align-items-center">
-                                    <input class="form-check-input ms-0 mt-0 me-3 custom-switch" type="checkbox" role="switch" name="generos[]" value="<?= $genre['id'] ?>" id="genre_<?= $genre['id'] ?>" <?= in_array($genre['id'], $userGenres) ? 'checked' : '' ?>>
+                                    <input class="form-check-input ms-0 mt-0 me-3 custom-switch" type="checkbox" role="switch" name="generos[]" value="<?= $genre['id'] ?>" id="genre_<?= $genre['id'] ?>" <?= in_array($genre['id'], $userGenres) ? 'checked="checked"' : '' ?>>
                                     <label class="form-check-label d-block cursor-pointer flex-grow-1 user-select-none" for="genre_<?= $genre['id'] ?>">
                                         <span class="fw-bold"><?= htmlspecialchars($genre['nombre']) ?></span>
                                     </label>

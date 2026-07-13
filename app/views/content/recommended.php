@@ -5,10 +5,10 @@
         <h2 class="mb-0 fw-bold">Recomendaciones para Ti</h2>
     </div>
 
-<?php if(!empty($recomendados)): ?>
+<?php if(!empty($recommended)): ?>
     <div class="alert alert-info shadow-sm border-0"><i class="bi bi-info-circle"></i> Basado en tus preferencias y nuestro catálogo local:</div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-        <?php foreach($recomendados as $item): ?>
+        <?php foreach($recommended as $item): ?>
             <div class="col">
                 <div class="card h-100 border-0 shadow-sm bg-body-tertiary">
                     <?php if(!empty($item['poster_url'])): ?>
@@ -24,10 +24,10 @@
             </div>
         <?php endforeach; ?>
     </div>
-<?php elseif(!empty($apiRecomendados)): ?>
+<?php elseif(!empty($apiRecommended)): ?>
     <div class="alert alert-success shadow-sm border-0"><i class="bi bi-film"></i> No encontramos mucho en nuestra base local, pero esto de TMDb te encantará:</div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-        <?php foreach($apiRecomendados as $item): ?>
+        <?php foreach($apiRecommended as $item): ?>
             <div class="col">
                 <div class="card h-100 border-0 shadow-sm bg-body-tertiary">
 

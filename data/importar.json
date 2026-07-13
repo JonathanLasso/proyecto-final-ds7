@@ -1,16 +1,26 @@
 [
   {
-    "titulo": "Batman: The Animated Series",
-    "tipo": "Action",
-    "descripcion": "The Dark Knight fights crime in Gotham City.",
-    "poster_url": "https://static.tvmaze.com/uploads/images/medium_portrait/6/15097.jpg",
-    "api_id": "481"
+    "titulo": "The Last of Us",
+    "tipo": "serie",
+    "descripcion": "Veinte años después de la destrucción de la civilización moderna, Joel es contratado para sacar a Ellie de una zona de cuarentena.",
+    "poster_url": "https://sm.ign.com/ign_latam/gallery/t/the-last-o/the-last-of-us-hbo-character-posters_m8c6.jpg",
+    "api_id": "tt3581920",
+    "generos": ["Action", "Drama", "Science Fiction"]
   },
   {
-    "titulo": "Superman",
-    "tipo": "Scripted",
-    "descripcion": "The Man of Steel protects Metropolis.",
-    "poster_url": "https://static.tvmaze.com/uploads/images/medium_portrait/10/26131.jpg",
-    "api_id": "525"
+    "titulo": "Resident Evil: Infinito",
+    "tipo": "serie",
+    "descripcion": "Años después de los horrores de Raccoon City, Leon S. Kennedy y Claire Redfield se cruzan de nuevo tras un brote zombi.",
+    "poster_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1DiSulx7zPfabeGHSx3Yf2KS3uojDBxZpGs3G6uM01z7xGYIxxDIORFEf&s=10",
+    "api_id": "tt13159704",
+    "generos": ["Action", "Horror", "Animation"]
+  },
+  {
+    "titulo": "Matrix",
+    "tipo": "pelicula",
+    "descripcion": "Un hacker descubre la verdad sobre su realidad.",
+    "poster_url": "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+    "api_id": "tt0133093",
+    "generos": ["Action", "Science Fiction"]
   }
 ]

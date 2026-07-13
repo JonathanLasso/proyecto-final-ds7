@@ -33,24 +33,30 @@
                                     <?= htmlspecialchars($item['title']) ?>
                                 </h5>
 
-                                <p class="card-text small text-muted mb-3">
-                                    <i class="bi bi-star-fill text-warning"></i> <?= htmlspecialchars(round($item['vote_average'], 1) ?? 'N/A') ?>
+                                <p class="card-text small text-muted mb-1">
+                                    <?= htmlspecialchars(isset($item['vote_average']) ? round($item['vote_average'], 1) : 'N/A', ENT_QUOTES, 'UTF-8') ?>
                                     <span class="float-end badge bg-info text-dark">Película</span>
                                 </p>
 
+                                <p class="card-text small text-muted mb-3 text-truncate" title="<?= htmlspecialchars($item['generos_texto']) ?>">
+                                    <i class="bi bi-tags-fill text-primary"></i> <?= htmlspecialchars($item['generos_texto']) ?>
+                                </p>
+
                                 <div class="mt-auto">
-                                    <a href="https://www.themoviedb.org/movie/<?= $item['id'] ?>" target="_blank" class="btn btn-outline-primary btn-sm w-100 fw-bold mb-2">
+                                    <a href="https://www.themoviedb.org/movie/<?= htmlspecialchars($item['id'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" class="btn btn-outline-primary btn-sm w-100 fw-bold mb-2">
                                         Ver Detalles
                                     </a>
 
-                                    <form action="/streammatch/public/content/guardar" method="POST">
+                                    <form action="/streammatch/public/content/save" method="POST">
                                         <input type="hidden" name="api_id" value="<?= htmlspecialchars($item['id']) ?>">
                                         <input type="hidden" name="titulo" value="<?= htmlspecialchars($item['title']) ?>">
                                         <input type="hidden" name="descripcion" value="<?= htmlspecialchars($item['overview'] ?? '') ?>">
                                         <input type="hidden" name="poster_url" value="<?= htmlspecialchars("https://image.tmdb.org/t/p/w500" . ($item['poster_path'] ?? '')) ?>">
 
+                                        <input type="hidden" name="generos_api" value="<?= htmlspecialchars($item['ids_locales_string'] ?? '') ?>">
+
                                         <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">
-                                            <i class="bi bi-download"></i> Guardar en el catalogo local
+                                            <i class="bi bi-download"></i> Guardar en el catálogo local
                                         </button>
                                     </form>
                                 </div>
@@ -73,7 +79,12 @@
                                 <img src="<?= htmlspecialchars($item['poster_url']) ?>" class="card-img-top poster-img" alt="Poster">
                             <?php endif; ?>
                             <div class="card-body d-flex flex-column">
-                                <h5 class="card-title fw-bold text-truncate"><?= htmlspecialchars($item['titulo']) ?></h5>
+                                <h5 class="card-title fw-bold text-truncate" title="<?= htmlspecialchars($item['titulo']) ?>"><?= htmlspecialchars($item['titulo']) ?></h5>
+
+                                <p class="card-text small text-muted mb-3 text-truncate" title="<?= htmlspecialchars($item['generos'] ?? '') ?>">
+                                    <i class="bi bi-tags-fill text-success"></i> <?= !empty($item['generos']) ? htmlspecialchars($item['generos']) : 'Sin géneros' ?>
+                                </p>
+
                                 <div class="mt-auto">
                                     <span class="badge bg-secondary w-100 py-2"><?= htmlspecialchars(ucfirst($item['tipo'])) ?></span>
                                 </div>
