@@ -37,14 +37,19 @@ class User {
     }
 
     public function create() {
-        $query = "INSERT INTO " . $this->table_name . " SET nombre=:nombre, email=:email, password=:password, rol=:rol";
-        $stmt = $this->conn->prepare($query);
-
         $this->nombre = htmlspecialchars(strip_tags($this->nombre));
         $this->email = htmlspecialchars(strip_tags($this->email));
-        $this->password = password_hash($this->password, PASSWORD_BCRYPT);
-        $this->rol = 'usuario';
-
+        $options = [
+            'memory_cost' => PASSWORD_ARGON2_DEFAULT_MEMORY_COST,
+            'time_cost' => PASSWORD_ARGON2_DEFAULT_TIME_COST,
+            'threads' => PASSWORD_ARGON2_DEFAULT_THREADS
+        ];
+        $this->password = password_hash($this->password, PASSWORD_ARGON2ID, $options);
+        $query = "INSERT INTO " . $this->table_name . " SET nombre=:nombre, email=:email, password=:password, rol=:rol";
+        $stmt = $this->conn->prepare($query);
+        if (empty($this->rol) || $this->rol !== 'administrador') {
+            $this->rol = 'usuario';
+        }
         $stmt->bindParam(":nombre", $this->nombre);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":password", $this->password);

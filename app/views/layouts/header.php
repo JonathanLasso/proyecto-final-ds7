@@ -33,10 +33,10 @@ $navbarClass = ($tema === 'dark') ? 'navbar-dark bg-dark' : 'navbar-light bg-lig
         </li>
         <?php if (isset($_SESSION['usuario_id'])): ?>
             <li class="nav-item">
-              <a class="nav-link" href="/streammatch/public/recomendaciones">Recomendaciones</a>
+              <a class="nav-link" href="/streammatch/public/recomendations">Recomendaciones</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/streammatch/public/preferencias">Preferencias</a>
+              <a class="nav-link" href="/streammatch/public/preferences">Preferencias</a>
             </li>
         <?php endif; ?>
         <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'administrador'): ?>
@@ -47,11 +47,11 @@ $navbarClass = ($tema === 'dark') ? 'navbar-dark bg-dark' : 'navbar-light bg-lig
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <!-- Theme Toggle -->
-        <li class="nav-item me-3">
-            <button id="themeToggle" class="btn btn-outline-secondary btn-sm" onclick="toggleTheme()">
-                <i id="themeIcon" class="bi <?= $tema === 'dark' ? 'bi-sun' : 'bi-moon' ?>"></i>
-            </button>
-        </li>
+          <li class="nav-item me-3">
+              <a href="/streammatch/public/theme/update?current=<?= $tema ?>" class="btn btn-outline-secondary btn-sm">
+                  <i class="bi <?= $tema === 'dark' ? 'bi-sun' : 'bi-moon' ?>"></i>
+              </a>
+          </li>
         <?php if (!isset($_SESSION['usuario_id'])): ?>
             <li class="nav-item">
                 <a class="nav-link" href="/streammatch/public/login">Login</a>

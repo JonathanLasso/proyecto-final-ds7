@@ -8,17 +8,30 @@ class Router {
             'login' => ['controller' => 'AuthController', 'method' => 'login'],
             'register' => ['controller' => 'AuthController', 'method' => 'register'],
             'logout' => ['controller' => 'AuthController', 'method' => 'logout'],
-            'preferencias' => ['controller' => 'UserController', 'method' => 'preferencias'],
-            'recomendaciones' => ['controller' => 'ContentController', 'method' => 'recomendaciones'],
+            'preferences' => ['controller' => 'UserController', 'method' => 'preferences'],
+            'recomendations' => ['controller' => 'ContentController', 'method' => 'recomendations'],
+            'theme/update' => ['controller' => 'UserController', 'method' => 'updateTheme'],
 
             // NUEVA RUTA: Mapea la acción del formulario con el método guardar() de tu ContentController
-            'content/guardar' => ['controller' => 'ContentController', 'method' => 'guardar'],
+            'content/save' => ['controller' => 'ContentController', 'method' => 'save'],
 
             'admin' => ['controller' => 'AdminController', 'method' => 'dashboard'],
-            'admin/export_json' => ['controller' => 'AdminController', 'method' => 'exportJson'],
-            'admin/export_xml' => ['controller' => 'AdminController', 'method' => 'exportXml'],
-            'admin/import' => ['controller' => 'AdminController', 'method' => 'importData']
+            'admin/login' => ['controller' => 'AdminController', 'method' => 'login'],
+            'admin/register' => ['controller' => 'AdminController', 'method' => 'register'],
+            'admin/export_json' => ['controller' => 'AdminController', 'method' => 'export_json'],
+            'admin/export_xml' => ['controller' => 'AdminController', 'method' => 'export_xml'],
+            'admin/import' => ['controller' => 'AdminController', 'method' => 'import'],
+
+            // crud
+            'admin/create' => ['controller' => 'AdminController', 'method' => 'create'],
+            'admin/update' => ['controller' => 'AdminController', 'method' => 'update'],
+            'admin/delete' => ['controller' => 'AdminController', 'method' => 'delete'],
+            'admin/deleteAll' => ['controller' => 'AdminController', 'method' => 'deleteAll'],
         ];
+
+        if (strpos($url, '?') !== false) {
+            $url = explode('?', $url)[0];
+        }
 
         // Limpiar la URL de barras finales
         $url = trim($url, '/');

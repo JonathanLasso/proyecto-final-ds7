@@ -1,11 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <catalogo>
     <contenido>
-        <id>1</id>
-        <titulo>Breaking Bad</titulo>
-        <tipo>Scripted</tipo>
-        <descripcion>A high school chemistry teacher turns to manufacturing methamphetamine.</descripcion>
-        <poster_url>https://static.tvmaze.com/uploads/images/medium_portrait/0/2400.jpg</poster_url>
-        <api_id>169</api_id>
+        <titulo>Arcane</titulo>
+        <tipo>serie</tipo>
+        <descripcion>Ambientada en la utópica Piltover y la oprimida ciudad subterránea de Zaun, la historia sigue los orígenes de dos campeones icónicos.</descripcion>
+        <poster_url>https://m.media-amazon.com/images/I/71xNpeuJt7L._AC_UF894,1000_QL80_.jpg</poster_url>
+        <api_id>tt11126994</api_id>
+        <generos>
+            <genero>Action</genero>
+            <genero>Animation</genero>
+            <genero>Science Fiction</genero>
+        </generos>
+    </contenido>
+    <contenido>
+        <titulo>Inception</titulo>
+        <tipo>pelicula</tipo>
+        <descripcion>Un ladrón que roba secretos corporativos a través del uso de tecnología de compartir sueños tiene la tarea de plantar una idea en la mente de un CEO.</descripcion>
+        <poster_url>https://m.media-amazon.com/images/I/714b1KQmskL._AC_UF894,1000_QL80_.jpg</poster_url>
+        <api_id>tt1375666</api_id>
+        <generos>
+            <genero>Action</genero>
+            <genero>Science Fiction</genero>
+            <genero>Thriller</genero>
+        </generos>
+    </contenido>
+    <contenido>
+        <titulo>Cyberpunk: Edgerunners</titulo>
+        <tipo>serie</tipo>
+        <descripcion>Un chico de la calle intenta sobrevivir en una ciudad obsesionada con la tecnología y la modificación corporal del futuro.</descripcion>
+        <poster_url>https://m.media-amazon.com/images/I/71OeoFoXILL._AC_UF894,1000_QL80_.jpg</poster_url>
+        <api_id>tt12590266</api_id>
+        <generos>
+            <genero>Action</genero>
+            <genero>Animation</genero>
+            <genero>Science Fiction</genero>
+        </generos>
     </contenido>
 </catalogo>
