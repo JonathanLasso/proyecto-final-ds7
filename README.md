@@ -181,17 +181,6 @@ Verificar que las sesiones de usuario se administran de forma segura.
 - Las cookies deben estar protegidas correctamente.
 - La sesión debe expirar según la configuración establecida.
 
----
-
-# Herramientas utilizadas
-
-- Burp Suite Community Edition
-- OWASP ZAP
-- Postman
-- Navegador Web
-- Herramientas para desarrolladores (DevTools)
-
----
 
 # Registro de Hallazgos
 
